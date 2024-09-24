@@ -1,0 +1,52 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+
+    .row-banner
+        .col-12
+            small &nbsp;Find places to work with WiFi near you!
+    
+    .row
+        .col-12.col-md-8
+
+            .card 
+                .card-block 
+                    h4
+                        a(href="/locations") Saxby's
+
+                        small &nbsp;
+                            i.fas.fa-star
+                            i.fas.fa-star
+                            i.fas.fa-star
+                            i.fas.fa-star
+
+                        span.badge.badge-pill.badge-default.float-right.text-bg-success 100m
+                    p.address 104 Kings Hwy E, Haddonfield, NJ 08033
+                    .facilities 
+                        span.badge.text-bg-warning Hot Drinks
+                        span.badge.text-bg-warning Hot Food
+                        span.badge.text-bg-warning Hot WiFi
+            
+            .card 
+                .card-block
+                    h4
+                        a(href="/locations") Starbucks
+
+                        small &nbsp;
+                            i.fas.fa-star
+                            i.fas.fa-star
+                            i.fas.fa-star
+
+                        span.badge.badge-pill.badge-default.float-right.text-bg-success 300m
+                    p.address 214 Kings Hwy E, Haddonfield, NJ 08033
+                    .facilities 
+                        span.badge.text-bg-warning Hot Drinks
+                        span.badge.text-bg-warning Hot Food
+                        span.badge.text-bg-warning Hot WiFi
+
+
+        .col-12.col-md-4
+            p.lead Loc8r helps you find places to work when out and about. 
+

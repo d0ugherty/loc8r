@@ -1,0 +1,58 @@
+extends layout
+
+block content
+    .row-banner
+        .col-12
+            h1 Saxby's
+    
+    .row
+        .col-12.col-lg-9
+            .row
+                .col-12.col-md-6
+                p.rating
+                    i.fas.fa-star
+                    i.fas.fa-star
+                    i.fas.fa-star
+                    i.fas.fa-star
+
+                    p.address 104 Kings Hwy E, Haddonfield, NJ 08033
+
+                    .card.card-primary
+                        .card-block 
+                            h2.card-title Operating hours 
+                            p.card-text Monday-Friday : 7:00AM - 7:00PM
+                            p.card-text Saturday : 7:00AM - 5:00PM
+                            p.card-text Sundar : 7:00AM - 5:00PM
+                    
+                    .card.card-primary
+                        .card-block 
+                            h2.card-title Facilities 
+                            span.badge.text-bg-warning 
+                                i.fa.fa-check
+                                    small &nbsp;Hot Drinks
+                            span.badge.text-bg-warning
+                                i.fa.fa-check
+                                    small &nbsp;Hot Food
+                            span.badge.text-bg-warning 
+                                i.fa.fa-check
+                                    small &nbsp;Hot WiFi
+
+                    col-12.col-md-6.location-map
+                        .card.card-primary
+                            .card-block
+                                h2.card-title Location map
+                                img.img-fluid.rounded(src='https://maps.googleapis.com/maps/api/staticmap?center=39.8959107,-75.0336839&zoom=13&size=600x300&maptype=roadmap&markers=color:red%7Clabel:C%39.8959107,-75.0336839&key=AIzaSyAVqasQschT29scVEZCGXOOvQMoW79k1Q0')
+
+                                .row
+                                    .col-12
+                                        .card.card-primary.review-card
+                                            .card-block
+                                                a.btn.btn-primary.float-right(href='/location/review/new') Add Review
+                                                h2.card-title Customer Review 
+                                                    .row.review
+                                                        .col-12.no-gutters.review-header
+                                                            span.rating
+                                                                i.fas.fa-star
+                                                                i.fas.fa-star
+                                                                i.fas.fa-star
+                                                                i.fas.fa-star

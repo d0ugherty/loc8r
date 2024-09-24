@@ -7,7 +7,7 @@ const locationInfo = (req, res) => {
 };
 
 const addReview = (req, res) => {
-    res.render('index', { title: 'Add Review' });
+    res.render('location-review-form', { title: 'Add Review' });
 }
 
 module.exports = {

@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
-const dbUri = 'mongodb://localhost/Loc8r';
+let dbUri = 'mongodb://localhost/Loc8r';
+
+if(process.env.NODE_ENV === 'production') {
+    dbUri = process.env.MONGODB_URI;
+}
 mongoose.connect(dbUri);
 
 /** Monitor Connection Events **/

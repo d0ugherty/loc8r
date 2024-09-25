@@ -1,53 +1,29 @@
 extends layout
 
-block content
-  h1= title
-  p Welcome to #{title}
+include mixins/rating
 
+block content
     .row-banner
         .col-12
-            small &nbsp;Find places to work with WiFi near you!
+            h1= pageHeader.title
+            small &nbsp;#{pageHeader.strapLine}
     
     .row
         .col-12.col-md-8
-
-            .card 
-                .card-block 
-                    h4
-                        a(href="/locations") Saxby's
-
-                        small &nbsp;
-                            i.fas.fa-star
-                            i.fas.fa-star
-                            i.fas.fa-star
-                            i.fas.fa-star
-                            i.far.fa-star
-
-                        span.badge.badge-pill.badge-default.float-right.text-bg-success 100m
-                    p.address 104 Kings Hwy E, Haddonfield, NJ 08033
-                    .facilities 
-                        span.badge.text-bg-warning Hot Drinks
-                        span.badge.text-bg-warning Hot Food
-                        span.badge.text-bg-warning Hot WiFi
-            
-            .card 
-                .card-block
-                    h4
-                        a(href="/locations") Starbucks
-
-                        small &nbsp;
-                            i.fas.fa-star
-                            i.fas.fa-star
-                            i.fas.fa-star
-                            i.far.fa-star
-                        span.badge.badge-pill.badge-default.float-right.text-bg-success 300m
-                    p.address 214 Kings Hwy E, Haddonfield, NJ 08033
-                    .facilities 
-                        span.badge.text-bg-warning Hot Drinks
-                        span.badge.text-bg-warning Hot Food
-                        span.badge.text-bg-warning Hot WiFi
-
+            each location in locations
+                .card
+                    .card-block
+                        h4
+                            a(href="/location")= location.name
+                            small &nbsp;
+                            +outputRating(location.rating)
+                            span.badge.badge-pill.text-bg-success.float-end= location.distance
+                        p.address= location.address
+                        .facilities
+                            for facility in location.facilities
+                                span.badge.text-bg-warning= facility
+                                | &nbsp;
 
         .col-12.col-md-4
-            p.lead Loc8r helps you find places to work when out and about. 
+            p.lead= sidebar
 

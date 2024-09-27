@@ -6,7 +6,6 @@ const request = require('supertest');
 const express = require('express');
 const app = require('../app.js');
 const { expect } = require('chai');
-
 const locationId1 = new ObjectId();
 const locationId2 = new ObjectId();
 const locationId3 = new ObjectId();
@@ -18,7 +17,8 @@ before(async () => {
     await mongoose.disconnect();
     await mongoose.connect('mongodb://localhost/loc8r-test', {
         useNewUrlParser: true,
-        useUnifiedTopology: true
+        useUnifiedTopology: true,
+        autoIndex: true
     });
 });
 
@@ -106,8 +106,10 @@ beforeEach(async () => {
             ]
         }
     ]);
+    await Location.ensureIndexes();
 });
 
+/**
 describe('GET /locations', function () {
     const url = '/api/locations';
 
@@ -139,6 +141,7 @@ describe('GET /locations', function () {
             });
     });
 });
+**/
 
 describe('GET /api/locations/:locationId', function() {
     const url= `/api/locations/${locationId1}`;
@@ -231,3 +234,65 @@ describe('GET /api/locations/:locationId/reviews/:reviewId', function() {
     });
 });
 
+describe('GET /api/locations?lng=&lat=&maxDistance=', function () {
+
+    const url = '/api/locations/';
+    console.log(url);
+
+    it("responds with 'success' status code", function (done) {
+        request(app)
+            .get(url)
+            .query({lng: -75.0374, lat: 39.8995, maxDistance: 1000})
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                expect(res.statusCode).to.equal(200);
+                done();
+            });
+    });
+
+    it("responds with JSON", function (done) {
+        request(app)
+            .get(url)
+            .query({lng: -75.0374, lat: 39.8995, maxDistance: 1000})
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                expect(res.statusCode).to.equal(200);
+                expect(res.type).to.equal('application/json');
+                done();
+            });
+    });
+
+    it("Responds with locations within maximum distance", function (done) {
+        request(app)
+            .get(url)
+            .query({lng: -75.0374, lat: 39.8995, maxDistance: 1000})
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                expect(res.statusCode).to.equal(200);
+                expect(res.body).to.be.an('array');
+                expect(res.body).to.have.lengthOf.above(0);
+                done();
+            });
+    });
+
+    it("Responds with no locations outside of maximum distance", function (done) {
+        request(app)
+            .get(url)
+            .query({lng: -80.0008279, lat: 40.4400874, maxDistance: 1000})
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                expect(res.statusCode).to.equal(200);
+                expect(res.body).to.be.an('array');
+                expect(res.body.length).to.equal(0);
+                done();
+            });
+    });
+});

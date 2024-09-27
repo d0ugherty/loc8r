@@ -49,14 +49,12 @@ const locationSchema = new mongoose.Schema({
         max: 5
     },
     coords: {
-        type: { type: String },
-        coordinates: [Number]
+        type: [Number],
+        index : '2dsphere'
     },
     facilities: [String],
     openingTimes: [openingTimeSchema],
     reviews: [reviewSchema],
 });
-
-locationSchema.index({coords: '2dsphere'});
 
 module.exports = mongoose.model('Location', locationSchema);

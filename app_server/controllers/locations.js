@@ -80,7 +80,7 @@ const locationInfo = (req, res) => {
                 ],
                 coords: {
                     lat: 39.8959107,
-                    lon: -75.0336839
+                    lon: 1
                 }
             },
         sidebar: {

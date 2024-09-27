@@ -1,5 +1,3 @@
-const mognoose = require('../models/mognoose');
-require('./locations');
 const mongoose = require("mongoose");
 
 const openingTimeSchema = new mongoose.Schema({
@@ -12,6 +10,10 @@ const openingTimeSchema = new mongoose.Schema({
     closed: {
         type: Boolean,
         required: true
+    },
+    _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        auto: true
     }
 });
 
@@ -27,6 +29,10 @@ const reviewSchema = new mongoose.Schema({
     createdOn: {
         type: Date,
         'default': Date.now
+    },
+    _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        auto: true
     }
 });
 
@@ -53,4 +59,4 @@ const locationSchema = new mongoose.Schema({
 
 locationSchema.index({coords: '2dsphere'});
 
-mongoose.model('Location', locationSchema);
+module.exports = mongoose.model('Location', locationSchema);

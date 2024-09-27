@@ -14,6 +14,7 @@ db.locations.insertMany([
         ],
         reviews: [
             {
+                _id: new ObjectId(),
                 author: "Bob Muffin",
                 rating: 5,
                 reviewText: "Best Chai Latte in the Greater Philadelphia Area",
@@ -34,12 +35,14 @@ db.locations.insertMany([
         ],
         reviews: [
             {
+                _id: new ObjectId(),
                 author: "Jane Doe",
                 rating: 4,
                 reviewText: "Great coffee, but it's usually crowded during peak hours.",
                 createdOn: new Date("2024-09-10")
             },
             {
+                _id: new ObjectId(),
                 author: "John Smith",
                 rating: 3,
                 reviewText: "Friendly staff, but the WiFi can be a bit slow.",
@@ -60,12 +63,14 @@ db.locations.insertMany([
         ],
         reviews: [
             {
+                _id: new ObjectId(),
                 author: "Alice Green",
                 rating: 5,
                 reviewText: "Cozy atmosphere with excellent coffee and pastries.",
                 createdOn: new Date("2024-08-15")
             },
             {
+                _id: new ObjectId(),
                 author: "Michael Brown",
                 rating: 4,
                 reviewText: "A quiet place to get some work done. Love the cold brew.",

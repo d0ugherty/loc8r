@@ -62,4 +62,4 @@ typings/
 
 #misc
 mongodb_dump
-test
+import_data

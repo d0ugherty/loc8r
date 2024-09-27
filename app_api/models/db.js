@@ -2,9 +2,12 @@ const mongoose = require('mongoose');
 
 let dbUri = 'mongodb://localhost/Loc8r';
 
-if(process.env.NODE_ENV === 'production') {
-    dbUri = process.env.MONGODB_URI;
+if (process.env.NODE_ENV === 'test') {
+    dbURI = 'mongodb://localhost/loc8r-test';
+} else if (process.env.NODE_ENV === 'production') {
+    dbURI = process.env.MONGODB_URI || 'mongodb://localhost/loc8r';
 }
+
 mongoose.connect(dbUri);
 
 /** Monitor Connection Events **/
@@ -50,7 +53,7 @@ process.once('SIGTERM', () => {
     });
 });
 
-
+require('./locations');
 
 
 

@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 const Location = mongoose.model('Location');
+const locService = require('../services/locationService');
 
 const locationsListByDistance = async (req, res) => {
     const lng = parseFloat(req.query.lng);
     const lat = parseFloat(req.query.lat);
     const maxDistance = parseFloat(req.query.maxDistance);
-
-    console.log(`LAT LON DISTANCE ${lng}, ${lat}, ${maxDistance}`);
+    const limit = 10;
     // construct the geoJSON
     const near = {
         type: "Point",
@@ -16,42 +16,28 @@ const locationsListByDistance = async (req, res) => {
     if(!lng || !lat) {
         return res.status(404).json({"message": "lng and lat parameters required"});
     }
-    try {
-        const results = await Location.aggregate([
-            {
-                $geoNear: {
-                    near,
-                    distanceField: "distance.calculated",
-                    key: 'coords',
-                    spherical: true,
-                    maxDistance: maxDistance,
-                },
-            },
-            {
-                $limit: 10
-            }
-        ]);
 
-        const locations = results.map(result => { // create new array to hold mapped results data
-            return {
-                id: result._id,
-                name: result.name,
-                address: result.address,
-                rating: result.rating,
-                facilities: result.facilities,
-                distance: `${result.distance.calculated.toFixed()}m` // get distance and fix it to nearest integer
-            }
-        });
+    try {
+
+        const locations = await locService.buildLocationList(maxDistance, limit, near);
         res.status(200).json(locations);
+
     } catch (err) {
+
         console.log(err);
         res.status(404).json({"message": "location not found"});
+
     }};
 
-const locationsCreate = (req, res) => {
-    res.status(201).json({
-        "status" : "success",
-    });
+const locationsCreate = async (req, res) => {
+    const data = locService.buildLocationData(req);
+    try {
+        const location = await Location.create(data);
+        res.status(201).json(location);
+    } catch(err){
+        console.log(err);
+        res.status(400).json({"message": "location not created"});
+    }
 };
 
 const locationsReadOne = (req, res) => {

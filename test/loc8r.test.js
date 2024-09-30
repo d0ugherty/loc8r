@@ -109,6 +109,7 @@ beforeEach(async () => {
     await Location.ensureIndexes();
 });
 
+
 /**
 describe('GET /locations', function () {
     const url = '/api/locations';
@@ -296,3 +297,75 @@ describe('GET /api/locations?lng=&lat=&maxDistance=', function () {
             });
     });
 });
+
+describe("POST /api/locations", function() {
+    const url = "/api/locations";
+    const validLocation = {
+        name: "Durango Doug's",
+        address:"123 Fake Street, Haddonfield, NJ 08033",
+        facilities: ['Hot Drinks', 'Hot Food', 'Hot WiFi'],
+        lng: -75.0374,
+        lat: 39.8995,
+        openingTimes:[
+            { days: "Monday-Friday", opening: "07:00", closing: "19:00", closed: false },
+            { days: "Saturday", opening: "07:00", closing: "17:00", closed: false },
+            { days: "Sunday", opening: "07:00", closing: "17:00", closed: false }
+        ],
+    };
+
+    const invalidLocation = {
+        address:"123 Fake Street, Haddonfield, NJ 08033",
+        facilities: ['Hot Drinks', 'Hot Food', 'Hot WiFi'],
+        coords: [-75.0374, 39.8995],
+        openingTimes:[
+            { days: "Monday-Friday", opening: "07:00", closing: "19:00", closed: false },
+            { days: "Saturday", opening: "07:00", closing: "17:00", closed: false },
+            { days: "Sunday", opening: "07:00", closing: "17:00", closed: false }
+        ],
+    };
+
+    it("responds with success status code and JSON document", async function() {
+        try {
+            const res = await request(app)
+                .post(url)
+                .send(validLocation)
+                .expect(201);
+
+            expect(res.body).not.to.be.undefined;
+            expect(res.body).not.to.be.null;
+        } catch(err){
+            console.log(err);
+            throw(err);
+        }
+    });
+
+    it("Responds with 400 error status code with invalid data", async function(){
+        try {
+            const res = await request(app)
+                .post(url)
+                .send(invalidLocation)
+                .expect(400);
+
+            expect(res.body).not.to.be.undefined;
+            expect(res.body).not.to.be.null;
+        } catch(err){
+            console.log(err);
+            throw(err);
+        }
+    });
+
+    it("Data is created", async function() {
+        try {
+            const res = await request(app)
+                .post(url)
+                .send(validLocation)
+                .expect(201);
+
+            expect(res.body).to.have.property('_id');
+            expect(res.body.name).to.equal("Durango Doug's");
+        } catch(err){
+            console.log(err);
+            throw(err);
+        }
+    });
+})

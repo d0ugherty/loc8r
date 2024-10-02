@@ -24,7 +24,6 @@ const locationsListByDistance = async (req, res) => {
 
     } catch (err) {
 
-        console.log(err);
         res.status(404).json({"message": "location not found"});
 
     }};

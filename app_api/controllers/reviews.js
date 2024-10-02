@@ -2,21 +2,19 @@ const mongoose = require('mongoose');
 const Location = mongoose.model('Location');
 const reviewService = require('../services/reviewService');
 
-const reviewCreate = (req, res) => {
-    const locationId = req.params.locationid;
+const reviewCreate = async (req, res) => {
+    const locationId = req.params.locationId;
 
     if(locationId) {
-        Location.findById(locationId)
-            .select('reviews')
-            .then((err, location) =>  {
-                if(err){
-                    return res.status(400).json({"message": err});
-                } else {
-                    let review;
-                    review = reviewService.addReview(req, res, location);
-                    return res.status(200).json(review);
-                }
-            });
+        try {
+            const location = await Location.findById(locationId).select('name reviews');
+            const review = await reviewService.addReview(req, res, location);
+            return res.status(200).json(review);
+
+        } catch (error) {
+
+            return res.status(400).json({"message": error});
+        }
     } else {
         return res.status(404).json({"message": "Location not found"});
     }

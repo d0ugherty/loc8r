@@ -1,34 +1,40 @@
 const mongoose = require('mongoose');
 const Location = mongoose.model('Location');
 
-function addReview(req, res, location) {
-    let review;
+async function addReview(req, res, location) {
+    try {
+        location.reviews.push({
+            author: req.body.author,
+            reviewText: req.body.reviewText,
+            rating: req.body.rating,
+        });
+        await location.save();
 
-    location.reviews.push({
-        author: req.body.author,
-        reviewText: req.body.reviewText,
-        rating: req.body.rating,
-    });
-
-    location.save((err, location) => {
-        if (err) {
-            res.status(400).json({"message": err});
-        } else {
-            review = location.reviews[location.reviews.length - 1];
-        }
-    });
-    return review;
+        await _updateRating(location._id);
+        const review = location.reviews[location.reviews.length - 1];
+        return review;
+    } catch (error) {
+        res.status(400).send({error: error.message});
+    }
 }
 
-function _updateRating(locationId){
-    let location = Location.findById(locationId);
-    let total = 0;
+async function _updateRating(locationId) {
+    try {
+        let location = await Location.findById(locationId).select('name rating reviews');
 
-    for(let review of location.reviews){
-        
+        const count = location.reviews.length;
+        const total = location.reviews.reduce(
+            (accumulator, {rating}) => {
+                return accumulator += rating
+            }, 0);
+
+        location.rating = parseInt(total / count, 10);
+        await location.save();
+    } catch (err) {
+        console.log(err);
     }
 }
 
 module.exports = {
-    addReview
+    addReview,
 }

@@ -10,7 +10,7 @@ async function addReview(req, res, location) {
         });
         await location.save();
 
-        await _updateRating(location._id);
+        await updateRating(location._id);
         const review = location.reviews[location.reviews.length - 1];
         return review;
     } catch (error) {
@@ -18,14 +18,14 @@ async function addReview(req, res, location) {
     }
 }
 
-async function _updateRating(locationId) {
+async function updateRating(locationId) {
     try {
-        let location = await Location.findById(locationId).select('name rating reviews');
+         location = await Location.findById(locationId).select('name rating reviews');
 
         const count = location.reviews.length;
         const total = location.reviews.reduce(
             (accumulator, {rating}) => {
-                return accumulator += rating
+                return accumulator + rating
             }, 0);
 
         location.rating = parseInt(total / count, 10);
@@ -37,4 +37,5 @@ async function _updateRating(locationId) {
 
 module.exports = {
     addReview,
+    updateRating
 }

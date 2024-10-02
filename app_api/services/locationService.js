@@ -57,7 +57,48 @@ function buildLocationData(req){
     }
 }
 
+async function updateLocationData(req, location){
+    try {
+        if (req.body.name !== undefined) {
+            location.name = req.body.name;
+        }
+        if (req.body.address !== undefined) {
+            location.address = req.body.address;
+        }
+        if(req.body.rating !== undefined) {
+            location.rating = req.body.rating;
+        }
+        if (req.body.facilities !== undefined) {
+            location.facilities = req.body.facilities;
+        }
+
+        if (req.body.lng !== undefined && req.body.lat !== undefined) {
+            location.coords = [parseFloat(req.body.lng), parseFloat(req.body.lat)];
+        }
+
+        if (req.body.openingTimes !== undefined) {
+            location.openingTimes = [];
+
+            if (Array.isArray(req.body.openingTimes)) {
+                req.body.openingTimes.forEach((openingTime) => {
+                    location.openingTimes.push({
+                        days: openingTime.days,
+                        opening: openingTime.opening,
+                        closing: openingTime.closing,
+                        closed: openingTime.closed,
+                    });
+                });
+            }
+        }
+        await location.save();
+        return Location.findById(location._id);
+    } catch (err){
+        console.log(err);
+    }
+}
+
 module.exports = {
     buildLocationList,
-    buildLocationData
+    buildLocationData,
+    updateLocationData
 };

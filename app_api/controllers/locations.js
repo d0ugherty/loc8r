@@ -18,7 +18,6 @@ const locationsListByDistance = async (req, res) => {
     }
 
     try {
-
         const locations = await locService.buildLocationList(maxDistance, limit, near);
         res.status(200).json(locations);
 
@@ -55,10 +54,25 @@ const locationsReadOne = (req, res) => {
         });
 };
 
-const locationsUpdateOne = (req, res) => {
-    res.status(200).json({
-        "status" : "success",
-    });
+const locationsUpdateOne = async (req, res) => {
+    const id = req.params.locationId;
+
+    if (!id) {
+        return res.status(400).json({ "message": "Location ID is required" });
+    }
+
+    let location = await Location.findById(id);
+    try {
+        if (!location) {
+            return res.status(404).json({"message": "location not found"});
+        }
+
+        location = await locService.updateLocationData(req, location);
+
+        return res.status(200).json(location);
+    } catch (error){
+        return res.status(400).json({"message": error});
+    }
 };
 
 const locationsDeleteOne = (req, res) => {

@@ -110,41 +110,6 @@ beforeEach(async () => {
     await Location.ensureIndexes();
 });
 
-
-/**
-describe('GET /locations', function () {
-    const url = '/api/locations';
-
-    it("responds with 'success' status code", function(done) {
-        request(app)
-            .get(url)
-            .end(function(err, res) {
-
-                if(err) {
-                    return done(err);
-                }
-
-                expect(res.statusCode).to.equal(200);
-                done();
-            });
-    });
-
-    it("responds with JSON", function(done) {
-        request(app)
-            .get(url)
-            .end(function(err, res) {
-                if(err) {
-                    return done(err);
-                }
-                expect(res).not.to.be.undefined;
-                expect(res).not.to.be.null;
-                expect(res.type).to.equal('application/json');
-                done();
-            });
-    });
-});
-**/
-
 describe('GET /api/locations/:locationId', function() {
     const url= `/api/locations/${locationId1}`;
 
@@ -447,3 +412,76 @@ describe("PUT /api/:locationId/reviews", function() {
             .expect(400);
     });
 })
+
+describe("PUT /api/:locationId", function() {
+    const validUrl = `/api/locations/${locationId1}`;
+    const invalidUrl = `/api/locations/xxxxx`;
+
+    it("Location is updated with new data", async function () {
+
+        const newData = {
+            name: "Saxby's Cafe", 
+            address: "105 Kings Hwy E, Haddonfield, NJ 08033",
+            rating: 3,
+            lng: -75.0372,
+            lat: 39.8997,
+            facilities: ["Hot Drinks", "Cold Drinks", "Hot Food", "WiFi", "Outdoor Seating"],
+            openingTimes: [
+                {days: "Monday-Friday", opening: "06:30", closing: "20:00", closed: false},
+                {days: "Saturday", opening: "07:00", closing: "18:00", closed: false},
+                {days: "Sunday", opening: "08:00", closing: "16:00", closed: false}
+            ]
+        }
+
+        const res = await request(app)
+            .put(validUrl)
+            .send(newData)
+            .expect(200);
+
+        const parsedData = JSON.parse(res.text);
+
+        expect(parsedData.name).to.equal(newData.name);
+        expect(parsedData.address).to.equal(newData.address);
+        expect(parsedData.rating).to.equal(3);
+        expect(parsedData.coords).to.deep.equal([newData.lng, newData.lat]);
+        expect(parsedData.facilities).to.include("Outdoor Seating");
+    });
+
+    it("Properties are only updated when data is provided", async function () {
+        const newData = {
+            name: "Saxby's Cafe",
+            facilities: ["Hot Drinks", "Cold Drinks", "Hot Food", "Outdoor Seating"],
+        }
+
+        const oldLocation = await Location.findById(locationId1).select("-name -facilities");
+
+        const res = await request(app)
+            .put(validUrl)
+            .send(newData)
+            .expect(200);
+
+        const parsedData = JSON.parse(res.text);
+
+        expect(parsedData.name).to.equal(newData.name);
+        expect(parsedData.facilities).to.deep.equal(newData.facilities);
+        expect(parsedData.address).to.equal(oldLocation.address);
+        expect(parsedData.coords).to.deep.equal(oldLocation.coords);
+        expect(parsedData.rating).to.equal(oldLocation.rating);
+    });
+
+    it("Return 404 error when Location ID is not found", async function () {
+        const invalidId = "66fca31357343d92a9e8c69b";
+        const newData = {
+            name: "",
+            address: ""
+        };
+
+        await request(app)
+            .put(`/api/locations/${invalidId}`)
+            .send(newData)
+            .expect(404);
+    });
+
+})
+
+describe("PUT /api/:locationId/reviews/:reviewId", function() {})

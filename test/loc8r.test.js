@@ -420,7 +420,7 @@ describe("PUT /api/:locationId", function() {
     it("Location is updated with new data", async function () {
 
         const newData = {
-            name: "Saxby's Cafe", 
+            name: "Saxby's Cafe",
             address: "105 Kings Hwy E, Haddonfield, NJ 08033",
             rating: 3,
             lng: -75.0372,

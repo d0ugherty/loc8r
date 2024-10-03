@@ -10,7 +10,7 @@ async function addReview(req, res, location) {
         });
         await location.save();
 
-        await updateRating(location._id);
+        await updateRating(location);
         const review = location.reviews[location.reviews.length - 1];
         return review;
     } catch (error) {
@@ -18,25 +18,8 @@ async function addReview(req, res, location) {
     }
 }
 
-async function updateRating(locationId) {
-    try {
-         location = await Location.findById(locationId).select('name rating reviews');
-
-        const count = location.reviews.length;
-        const total = location.reviews.reduce(
-            (accumulator, {rating}) => {
-                return accumulator + rating
-            }, 0);
-
-        location.rating = parseInt(total / count, 10);
-        await location.save();
-    } catch (err) {
-        console.log(err);
-    }
-}
-
 async function updateReview(req, res, locationId) {
-    const location = await Location.findById(locationId).select('name reviews');
+    const location = await Location.findById(locationId).select('name rating reviews');
 
     if (location) {
         try {
@@ -57,7 +40,7 @@ async function updateReview(req, res, locationId) {
                         currentReview.reviewText = req.body.reviewText;
                     }
                     await location.save();
-                    await updateRating(location._id);
+                    await updateRating(location);
                     return currentReview;
                 }
             } else {
@@ -72,7 +55,48 @@ async function updateReview(req, res, locationId) {
     }
 }
 
+async function deleteReview(res, locationId, reviewId){
+    const location = await Location.findById(locationId).select('name rating reviews');
+    try {
+        if (location) {
+            const reviews = location.reviews
+            if (reviews && reviews.length > 0){
+                const review = reviews.id(reviewId);
+                if (review) {
+                    reviews.pull(reviewId);
+                    await updateRating(location);
+                    return res.status(204).json({"message": "Review deleted"});
+                } else {
+                    return res.status(404).json({"message": "Review not found"});
+                }
+            } else {
+                return res.status(404).json({"message": "No reviews to delete"});
+            }
+        } else {
+            return res.status(404).json({"message": "Location not found"});
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+async function updateRating(location) {
+    try {
+        const count = location.reviews.length;
+        const total = location.reviews.reduce(
+            (accumulator, {rating}) => {
+                return accumulator + rating
+            }, 0);
+
+        location.rating = parseInt(total / count, 10);
+        await location.save();
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 module.exports = {
     addReview,
-    updateReview
+    updateReview,
+    deleteReview
 }

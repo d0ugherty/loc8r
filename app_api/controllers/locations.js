@@ -79,7 +79,7 @@ const locationsDeleteOne = async (req, res) => {
     const id = req.params.locationId;
 
     if(!mongoose.isValidObjectId(id)) {
-        return res.status(400).json({"message": "Invalid Location ID"});
+        return res.status(400).json({"message": "Invalid ID"});
     } else {
         return await locService.deleteLocation(req, res, id);
     }

@@ -16,6 +16,8 @@ const locationId4 = new ObjectId();
 
 const reviewId1 = new ObjectId();
 const reviewId2 = new ObjectId();
+const reviewId3 = new ObjectId();
+const reviewId4 = new ObjectId();
 
 before(async () => {
     await mongoose.disconnect();
@@ -33,7 +35,7 @@ beforeEach(async () => {
             _id: locationId1,
             name: "Saxby's",
             address: "104 Kings Hwy E, Haddonfield, NJ 08033",
-            rating: 4,
+            rating: 5,
             coords: [-75.0374, 39.8995],
             facilities: ["Hot Drinks", "Hot Food", "Hot WiFi"],
             openingTimes: [
@@ -94,14 +96,14 @@ beforeEach(async () => {
             ],
             reviews: [
                 {
-                    _id: new ObjectId(),
+                    _id: reviewId3,
                     author: "Alice Green",
                     rating: 5,
                     reviewText: "Cozy atmosphere with excellent coffee and pastries.",
                     createdOn: new Date("2024-08-15")
                 },
                 {
-                    _id: new ObjectId(),
+                    _id: reviewId4,
                     author: "Michael Brown",
                     rating: 4,
                     reviewText: "A quiet place to get some work done. Love the cold brew.",
@@ -350,7 +352,7 @@ describe("POST /api/locations", function() {
     });
 })
 
-describe("PUT /api/:locationId/reviews", function() {
+describe("PUT /api/locations/:locationId/reviews", function() {
     const validUrl = `/api/locations/${locationId2}/reviews`;
     const validReview = {
         author: "Silky Johnson",
@@ -430,7 +432,7 @@ describe("PUT /api/:locationId/reviews", function() {
     });
 })
 
-describe("PUT /api/:locationId", function() {
+describe("PUT /api/locations/:locationId", function() {
     const validUrl = `/api/locations/${locationId1}`;
 
     it("Location is updated with new data", async function () {
@@ -499,7 +501,7 @@ describe("PUT /api/:locationId", function() {
     });
 });
 
-describe("PUT /api/:locationId/reviews/:reviewId", function() {
+describe("PUT /api/locations/:locationId/reviews/:reviewId", function() {
     const validUrl = `/api/locations/${locationId2}/reviews/${reviewId1}`;
 
     it("Review is updated with new data", async function () {
@@ -521,6 +523,27 @@ describe("PUT /api/:locationId/reviews/:reviewId", function() {
         expect(updatedReview.rating).to.equal(newData.rating);
         expect(updatedReview.reviewText).to.equal(newData.reviewText);
     });
+
+    it("Location rating is updated after an updated review" , async function() {
+        const newData = {
+            author: "Quindarius Gooch",
+            rating: 2,
+            reviewText: "This coffee tastes like burnt popcorn."
+        };
+
+        const oldLocation = await Location.findById(locationId2);
+
+        await request(app)
+            .put(validUrl)
+            .send(newData)
+            .expect(200);
+
+        const updatedLocation = await Location.findById(locationId2);
+
+        expect(updatedLocation.rating).to.not.equal(oldLocation.rating);
+        expect(updatedLocation.rating).to.equal(3);
+
+    })
 
     it("Properties are only updated when data is provided", async function() {
         const newData = {
@@ -598,7 +621,7 @@ describe("PUT /api/:locationId/reviews/:reviewId", function() {
     });
 });
 
-describe("DELETE /api/:locationId", function() {
+describe("DELETE /api/locations/:locationId", function() {
     it("Location is successfully deleted", async function() {
         const validUrl = `/api/locations/${locationId1}`;
 
@@ -609,4 +632,72 @@ describe("DELETE /api/:locationId", function() {
         const location = await Location.findById(locationId1);
         expect(location).to.be.null;
     });
-})
+});
+
+describe("DELETE /api/locations/:locationId/reviews/:reviewId", function () {
+    it("Review is successfully deleted", async function() {
+        const url = `/api/locations/${locationId3}/reviews/${reviewId4}`;
+
+        await request(app)
+            .delete(url)
+            .expect(204);
+
+        const location = await Location.findById(locationId3);
+        const deletedReview = location.reviews.id(reviewId4);
+
+        expect(deletedReview).to.be.null;
+    });
+
+    it("Location rating is updated after a review is deleted", async function() {
+        const url = `/api/locations/${locationId3}/reviews/${reviewId4}`;
+        const oldLocation = await Location.findById(locationId3);
+
+        await request(app)
+            .delete(url)
+            .expect(204);
+
+        const location = await Location.findById(locationId3);
+        const deletedReview = location.reviews.id(reviewId4);
+
+        expect(deletedReview).to.be.null;
+        expect(oldLocation.rating).to.not.equal(location.rating);
+        expect(location.rating).to.equal(5);
+    });
+
+    it("Return unsuccessful error code with an invalid MongoDB ID", async function() {
+        const url = `/api/locations/zzzzzz`;
+
+        const res = await request(app)
+            .delete(url)
+            .expect(400);
+
+        const parsedData = JSON.parse(res.text);
+        expect(parsedData.message).to.equal("Invalid ID");
+    });
+
+    it("Return 404 error code when no location or review is found", async function() {
+        let url = `/api/locations/66fca31357343d92a9e8c69b/reviews/66fca31357343d92a9e8c69b`;
+        let res = await request(app)
+            .delete(url)
+            .expect(404);
+
+        let parsedData = JSON.parse(res.text);
+        expect(parsedData.message).to.equal("Location not found");
+
+        url = `/api/locations/${locationId3}/reviews/66fca31357343d92a9e8c69b`;
+        res = await request(app)
+            .delete(url)
+            .expect(404);
+
+        parsedData = JSON.parse(res.text);
+        expect(parsedData.message).to.equal("Review not found");
+
+        url = `/api/locations/${locationId4}/reviews/66fca31357343d92a9e8c69b`;
+        res = await request(app)
+            .delete(url)
+            .expect(404);
+
+        parsedData = JSON.parse(res.text);
+        expect(parsedData.message).to.equal("No reviews to delete");
+    });
+});

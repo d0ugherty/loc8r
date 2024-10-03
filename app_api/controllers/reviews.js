@@ -66,10 +66,15 @@ const reviewsUpdateOne = async (req, res) => {
     }
 }
 
-const reviewsDeleteOne = (req, res) => {
-    res.status(204).json({
-        "status" : "success",
-    });
+const reviewsDeleteOne = async (req, res) => {
+    const locId = req.params.locationId;
+    const revId = req.params.reviewId;
+
+    if(!mongoose.isValidObjectId(locId) || !mongoose.isValidObjectId(revId)) {
+        return res.status(400).json({"message": "Invalid ID"});
+    } else {
+        await reviewService.deleteReview(res, locId, revId);
+    }
 }
 
 module.exports = {

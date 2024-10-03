@@ -22,7 +22,7 @@ router
 router
     .route('/locations/:locationId/reviews/:reviewId')
     .get(controllerReviews.reviewsReadOne)
-    .post(controllerReviews.reviewsUpdateOne)
+    .put(controllerReviews.reviewsUpdateOne)
     .delete(controllerReviews.reviewsDeleteOne);
 
 module.exports = router;

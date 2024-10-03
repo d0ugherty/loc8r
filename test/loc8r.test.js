@@ -7,9 +7,12 @@ const express = require('express');
 const app = require('../app.js');
 const { expect } = require('chai');
 const url = require("node:url");
+const res = require("express/lib/response");
+
 const locationId1 = new ObjectId();
 const locationId2 = new ObjectId();
 const locationId3 = new ObjectId();
+const locationId4 = new ObjectId();
 
 const reviewId1 = new ObjectId();
 const reviewId2 = new ObjectId();
@@ -105,6 +108,20 @@ beforeEach(async () => {
                     createdOn: new Date("2024-08-20")
                 }
             ]
+        },
+        {
+            _id: locationId4,
+            name: "Bean Water",
+            address: "107 Kings Hwy E, Haddonfield, NJ 08033",
+            rating: 3,
+            coords: [-75.0372, 39.8997],
+            facilities: ["Hot Drinks", "Cold Drinks", "Hot Food", "WiFi", "Outdoor Seating"],
+            openingTimes: [
+                {days: "Monday-Friday", opening: "06:30", closing: "20:00", closed: false},
+                {days: "Saturday", opening: "07:00", closing: "18:00", closed: false},
+                {days: "Sunday", opening: "08:00", closing: "16:00", closed: false}
+            ],
+            reviews: []
         }
     ]);
     await Location.ensureIndexes();
@@ -415,7 +432,6 @@ describe("PUT /api/:locationId/reviews", function() {
 
 describe("PUT /api/:locationId", function() {
     const validUrl = `/api/locations/${locationId1}`;
-    const invalidUrl = `/api/locations/xxxxx`;
 
     it("Location is updated with new data", async function () {
 
@@ -481,7 +497,116 @@ describe("PUT /api/:locationId", function() {
             .send(newData)
             .expect(404);
     });
+});
 
+describe("PUT /api/:locationId/reviews/:reviewId", function() {
+    const validUrl = `/api/locations/${locationId2}/reviews/${reviewId1}`;
+
+    it("Review is updated with new data", async function () {
+        const newData = {
+            author: "Quindarius Gooch",
+            rating: 2,
+            reviewText: "This coffee tastes like burnt popcorn."
+        };
+
+        await request(app)
+            .put(validUrl)
+            .send(newData)
+            .expect(200);
+
+        const location = await Location.findById(locationId2);
+        const updatedReview = location.reviews.id(reviewId1);
+
+        expect(updatedReview.author).to.equal(newData.author);
+        expect(updatedReview.rating).to.equal(newData.rating);
+        expect(updatedReview.reviewText).to.equal(newData.reviewText);
+    });
+
+    it("Properties are only updated when data is provided", async function() {
+        const newData = {
+            rating: 2,
+            reviewText: "This coffee tastes like burnt popcorn."
+        };
+        const oldLoc = await Location.findById(locationId2);
+        const oldReview = oldLoc.reviews.id(reviewId1);
+
+        await request(app)
+            .put(validUrl)
+            .send(newData)
+            .expect(200);
+
+        const location = await Location.findById(locationId2);
+        const updatedReview = location.reviews.id(reviewId1);
+
+        expect(updatedReview.author).to.equal(oldReview.author);
+        expect(updatedReview.rating).to.equal(newData.rating);
+        expect(updatedReview.reviewText).to.equal(newData.reviewText);
+    });
+
+    it("Return with unsuccessful code with invalid parameters", async function() {
+        const invalidUrl1 = `/api/locations/${locationId2}/reviews/zzzzzz`;
+        const invalidUrl2 = `/api/locations/66fca31357343d92a9e8c69b/reviews/66fca31357343d92a9e8c69b`;
+        const invalidUrl3 = `/api/locations/zzzzzzzzz/reviews/66fca31357343d92a9e8c69b`;
+
+        const newData = {
+            rating: 2,
+            reviewText: "This coffee tastes like burnt popcorn."
+        };
+
+        // Existing Location ID, invalid review ID
+        let res = await request(app)
+            .put(invalidUrl1)
+            .send(newData)
+            .expect(400);
+
+        let parsedData = JSON.parse(res.text);
+        expect(parsedData.message).to.equal("Invalid ID");
+
+        // Non-existing Location Id, Non-existing Review Id
+        res = await request(app)
+            .put(invalidUrl2)
+            .send(newData)
+            .expect(404);
+
+        parsedData = JSON.parse(res.text);
+        expect(parsedData.message).to.equal("Location not found")
+
+        // Invalid locationID
+        res = await request(app)
+            .put(invalidUrl3)
+            .send(newData)
+            .expect(400);
+
+        parsedData = JSON.parse(res.text);
+        expect(parsedData.message).to.equal("Invalid ID");
+    });
+
+    it("Return with unsuccessful code for a location with no review subdocuments", async function() {
+        const noReviewUrl = `/api/locations/${locationId4}/reviews/66fca31357343d92a9e8c69b`;
+        const newData = {
+            rating: 2,
+            reviewText: "This coffee tastes like burnt popcorn."
+        };
+
+        const res = await request(app)
+            .put(noReviewUrl)
+            .send(newData)
+            .expect(404);
+
+        const parsedData = JSON.parse(res.text);
+        expect(parsedData.message).to.equal("No reviews to update");
+    });
+});
+
+describe("DELETE /api/:locationId", function() {
+    it("Location is successfully deleted", async function() {
+        const validUrl = `/api/locations/${locationId1}`;
+
+        await request(app)
+            .delete(validUrl)
+            .expect(204);
+
+        const location = await Location.findById(locationId1);
+        expect(location).to.be.null;
+    });
 })
-
-describe("PUT /api/:locationId/reviews/:reviewId", function() {})

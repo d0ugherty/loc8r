@@ -56,7 +56,7 @@ const locationsReadOne = (req, res) => {
 
 const locationsUpdateOne = async (req, res) => {
     const id = req.params.locationId;
-
+5
     if (!id) {
         return res.status(400).json({ "message": "Location ID is required" });
     }
@@ -75,10 +75,14 @@ const locationsUpdateOne = async (req, res) => {
     }
 };
 
-const locationsDeleteOne = (req, res) => {
-    res.status(204).json({
-        "status" : "success",
-    });
+const locationsDeleteOne = async (req, res) => {
+    const id = req.params.locationId;
+
+    if(!mongoose.isValidObjectId(id)) {
+        return res.status(400).json({"message": "Invalid Location ID"});
+    } else {
+        return await locService.deleteLocation(req, res, id);
+    }
 };
 
 module.exports = {

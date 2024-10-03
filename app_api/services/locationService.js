@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const res = require("express/lib/response");
 const Location = mongoose.model('Location');
 
 async function buildLocationList(maxDistance, limit, near){
@@ -97,8 +98,19 @@ async function updateLocationData(req, location){
     }
 }
 
+async function deleteLocation(req, res, locationId){
+    try {
+        await Location.findByIdAndDelete(locationId);
+        return res.status(204).json({"message": "Location deleted"});
+    } catch (err) {
+        console.log(err);
+        return res.status(404).json({"message": err});
+    }
+}
+
 module.exports = {
     buildLocationList,
     buildLocationData,
+    deleteLocation,
     updateLocationData
 };

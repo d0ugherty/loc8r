@@ -35,7 +35,44 @@ async function updateRating(locationId) {
     }
 }
 
+async function updateReview(req, res, locationId) {
+    const location = await Location.findById(locationId).select('name reviews');
+
+    if (location) {
+        try {
+            if (location.reviews && location.reviews.length > 0){
+                const currentReview = location.reviews.id(req.params.reviewId);
+
+                if (!currentReview){
+                    return res.status(404).json({"message": "Review not found"});
+                } else {
+
+                    if (req.body.author !== undefined) {
+                        currentReview.author = req.body.author;
+                    }
+                    if (req.body.rating !== undefined) {
+                        currentReview.rating = req.body.rating;
+                    }
+                    if (req.body.reviewText !== undefined) {
+                        currentReview.reviewText = req.body.reviewText;
+                    }
+                    await location.save();
+                    await updateRating(location._id);
+                    return currentReview;
+                }
+            } else {
+                return res.status(404).json({"message": "No reviews to update"});
+            }
+        } catch (error) {
+            console.log(error);
+            return res.status(404).json(error);
+        }
+    } else {
+        return res.status(404).json({"message": "Location not found"});
+    }
+}
+
 module.exports = {
     addReview,
-    updateRating
+    updateReview
 }

@@ -1,35 +1,44 @@
-const homeList = (req, res) => {
+const request = require('request');
+
+const apiOptions = {
+    server: 'http://localhost:3000',
+};
+
+if (process.env.NODE_ENV === 'production') {
+    apiOptions.server = 'https://sleepy-mountain-06531-6c73a5d5bff4.herokuapp.com/';
+}
+
+const renderHomepage = (req, res, responseBody) => {
     res.render('locations-list', {
         title: 'Loc8r - find a place to work with WiFi',
-        pageHeader : {
+        pageHeader: {
             title: 'Loc8r',
             strapLine: 'Find a place to work with WiFi near you!',
         },
-        locations: [
-            {
-                name: "Saxby's",
-                address: "104 Kings Hwy E, Haddonfield, NJ 08033",
-                rating: 4,
-                facilities: ['Hot Drinks', 'Hot Food', 'Hot WiFi'],
-                distance: '100m'
-            },
-            {
-                name: "Starbucks",
-                address: "214 Kings Hwy E, Haddonfield, NJ 08033",
-                rating: 3,
-                facilities: ['Hot Drinks', 'Hot Food', 'Hot WiFi'],
-                distance: '200m'
-            },
-            {
-                name: "Jersey Java",
-                address: "140 Haddon Ave, Haddonfield, NJ 08033",
-                rating: 4,
-                facilities: ['Hot Drinks', 'Hot Food', 'Hot WiFi'],
-                distance: '300m'
-            }
-        ],
-        sidebar: 'Loc8r helps you find places to work when out and about. '
+        sidebar: "This is the sidebar",
+        locations: responseBody
     });
+    console.log(responseBody);
+};
+
+const homeList = (req, res) => {
+    const path = '/api/locations';
+    const requestOptions = {
+        url: `${apiOptions.server}${path}`,
+        method: 'GET',
+        json: {},
+        qs: {
+            lng: -75.0351117,
+            lat: 39.8963309,
+            maxDistance: 20000
+        }
+    };
+    request(
+        requestOptions,
+        (err, response, body) => {
+            renderHomepage(req, res, body);
+        }
+    );
 };
 
 const locationInfo = (req, res) => {

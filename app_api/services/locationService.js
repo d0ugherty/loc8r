@@ -2,7 +2,14 @@ const mongoose = require('mongoose');
 const res = require("express/lib/response");
 const Location = mongoose.model('Location');
 
-async function buildLocationList(maxDistance, limit, near){
+async function getNearLocations(lng, lat, maxDistance){
+    const limit = 10;
+    // construct the geoJSON
+    const near = {
+        type: "Point",
+        coordinates: [lng, lat]
+    };
+
     const results = await Location.aggregate([
         {
             $geoNear: {
@@ -17,6 +24,11 @@ async function buildLocationList(maxDistance, limit, near){
             $limit: limit
         }
     ]);
+
+    return results;
+}
+
+async function buildLocationList(results){
 
     const locations = results.map(result => { // create new array to hold mapped results data
         return {
@@ -108,9 +120,30 @@ async function deleteLocation(req, res, locationId){
     }
 }
 
+async function getLocation(req, res, locationId){
+    const location = await Location.findById(locationId);
+    if (!location) {
+        throw new Error("Location not found");
+    } else {
+        return location;
+    }
+}
+
+async function createLocation(locationData){
+    try {
+        const location = await Location.create(locationData);
+        return location;
+    } catch (error) {
+        throw new Error(error);
+    }
+}
+
 module.exports = {
+    getNearLocations,
     buildLocationList,
     buildLocationData,
     deleteLocation,
-    updateLocationData
+    updateLocationData,
+    getLocation,
+    createLocation
 };

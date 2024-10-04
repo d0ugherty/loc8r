@@ -17,7 +17,8 @@
     "http-errors": "~1.6.3",
     "mongoose": "^8.6.3",
     "morgan": "~1.9.1",
-    "pug": "2.0.0-beta11"
+    "pug": "2.0.0-beta11",
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",

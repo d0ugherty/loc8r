@@ -210,11 +210,13 @@ describe('GET /api/locations/:locationId/reviews/:reviewId', function() {
                 if (err) {
                     return done(err);
                 }
+                const parsedData = JSON.parse(res.text);
+
                 expect(res.statusCode).to.equal(200);
-                expect(res.body.review._id).to.equal(reviewId2.toString());
-                expect(res.body.review.author).to.equal("John Smith");
-                expect(res.body.review.rating).to.equal(5);
-                expect(res.body.review.reviewText).to.equal("Friendly staff, but the WiFi can be a bit slow.");
+                expect(parsedData._id).to.equal(reviewId2.toString());
+                expect(parsedData.author).to.equal("John Smith");
+                expect(parsedData.rating).to.equal(5);
+                expect(parsedData.reviewText).to.equal("Friendly staff, but the WiFi can be a bit slow.");
                 done();
             });
     });

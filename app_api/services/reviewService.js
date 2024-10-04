@@ -18,6 +18,22 @@ async function addReview(req, res, location) {
     }
 }
 
+async function getReview(locationId, reviewId) {
+    const location = await Location.findById(locationId).select('name reviews');
+
+    if (!location) {
+        throw new Error("Location not found");
+    }
+
+    const review = location.reviews.id(reviewId);
+
+    if (!review) {
+        throw new Error("Review not found");
+    }
+
+    return review;
+}
+
 async function updateReview(req, res, locationId) {
     const location = await Location.findById(locationId).select('name rating reviews');
 
@@ -97,6 +113,7 @@ async function updateRating(location) {
 
 module.exports = {
     addReview,
+    getReview,
     updateReview,
     deleteReview
 }

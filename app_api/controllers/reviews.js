@@ -9,7 +9,7 @@ const reviewCreate = async (req, res) => {
         try {
             const location = await Location.findById(locationId).select('name reviews');
             const review = await reviewService.addReview(req, res, location);
-            return res.status(200).json(review);
+            return res.status(201).json(review);
 
         } catch (error) {
 

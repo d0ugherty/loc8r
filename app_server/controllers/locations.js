@@ -77,8 +77,6 @@ const doAddReview = (req, res) => {
         reviewText: req.body.reviewText,
     };
 
-    console.log(`POST DATA: ${postData.author}, ${postData.reviewText}, ${postData.rating}`); 
-
     const requestOptions = {
         url: `${apiOptions.server}${path}`,
         method: 'POST',

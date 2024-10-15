@@ -3,11 +3,8 @@ require('../app_api/models/locations');
 const ObjectId = mongoose.Types.ObjectId;
 const Location = mongoose.model('Location');
 const request = require('supertest');
-const express = require('express');
 const app = require('../app.js');
 const { expect } = require('chai');
-const url = require("node:url");
-const res = require("express/lib/response");
 
 const locationId1 = new ObjectId();
 const locationId2 = new ObjectId();

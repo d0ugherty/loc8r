@@ -7,7 +7,7 @@ const locationsListByDistance = async (req, res) => {
     const lat = parseFloat(req.query.lat);
     const maxDistance = parseFloat(req.query.maxDistance);
 
-    if(!lng || !lat) {
+    if(!lng && lng !== 0 || !lat && lat !== 0) {
         return res.status(400).json({"message": "lng and lat parameters required"});
     }
 

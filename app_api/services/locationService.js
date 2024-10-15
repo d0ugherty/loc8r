@@ -32,16 +32,29 @@ async function buildLocationList(results){
 
     const locations = results.map(result => { // create new array to hold mapped results data
         return {
-            id: result._id,
+            _id: result._id,
             name: result.name,
             address: result.address,
             rating: result.rating,
             facilities: result.facilities,
-            distance: `${result.distance.calculated.toFixed()}m` // get distance and fix it to nearest integer
+            distance: `${_formatDistance(result.distance)}` // get distance and fix it to nearest integer
         }
     });
 
     return locations;
+}
+
+function _formatDistance(distance){
+    let result = 0;
+    let unit = 'm';
+
+    if (distance > 1000) {
+        result = parseFloat(distance.calculated / 1000).toFixed(1);
+        unit = 'km';
+    } else {
+        result = Math.floor(distance.calculated);
+    }
+    return result + unit;
 }
 
 function buildLocationData(req){

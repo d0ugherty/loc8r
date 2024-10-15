@@ -1,9 +1,11 @@
 extends layout
 
 include mixins/rating
+include mixins/formatDate
 
 block content
     .row.banner
+        .col-12
         .col-12
             h1= pageHeader.title
     .row
@@ -27,7 +29,7 @@ block content
                         .card-block
                             h2.card-title Facilities
                             each facility in location.facilities
-                                span.badge.badge-warning
+                                span.badge.badge-pill.text-bg-success
                                     i.fa.fa-check
                                     | &nbsp;#{facility}
                                 | &nbsp;
@@ -35,13 +37,13 @@ block content
                     .card.card-primary
                         .card-block
                             h2.card-title Location map
-                            img.img-fluid.rounded(src=`https://maps.googleapis.com/maps/api/staticmap?center=${location.coords.lat},${location.coords.lon}&zoom=13&size=600x300&maptype=roadmap&markers=color:red%7Clabel:C%39.8959107,-75.0336839&key=AIzaSyAVqasQschT29scVEZCGXOOvQMoW79k1Q0`)
+                            img.img-fluid.rounded(src=`https://maps.googleapis.com/maps/api/staticmap?center=${location.coords.lat},${location.coords.lng}&zoom=13&size=600x300&maptype=roadmap&markers=color:red%7Clabel:C%39.8959107,-75.0336839&key=AIzaSyAVqasQschT29scVEZCGXOOvQMoW79k1Q0`)
 
             .row
                 .col-12
                     .card.card-primary.review-card
                         .card-block
-                            a.btn.btn-primary.float-right(href='/location/review/new') Add review
+                            a.btn.btn-primary.float-right(href=`/location/${location._id}/review/new`) Add review
                             h2.card-title Customer reviews
                             each review in location.reviews
                                 .row.review
@@ -50,7 +52,8 @@ block content
                                             +outputRating(review.rating)
                                         .row
                                             span.reviewAuthor #{review.author}
-                                            small.reviewTimestamp #{review.timestamp}
+                                            small.reviewTimestamp
+                                                +formatDate(review.createdOn)
                                     .col-12
                                         p !{(review.reviewText).replace(/\n/g, '<br/>')}
         .col-12.col-lg-3

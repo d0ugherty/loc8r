@@ -17,7 +17,7 @@ router
 
 router
     .route('/locations/:locationId/reviews')
-    .put(controllerReviews.reviewCreate);
+    .post(controllerReviews.reviewCreate);
 
 router
     .route('/locations/:locationId/reviews/:reviewId')

@@ -9,6 +9,15 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const renderHomepage = (req, res, responseBody) => {
+    let message = null;
+
+    if (!(responseBody instanceof Array)) {
+        message = "API lookup error";
+        responseBody = [];
+    } else if (!responseBody.length) {
+        message = "No places found nearby.";
+    }
+
     res.render('locations-list', {
         title: 'Loc8r - find a place to work with WiFi',
         pageHeader: {
@@ -16,13 +25,14 @@ const renderHomepage = (req, res, responseBody) => {
             strapLine: 'Find a place to work with WiFi near you!',
         },
         sidebar: "This is the sidebar",
-        locations: responseBody
+        locations: responseBody,
+        message
     });
-    console.log(responseBody);
 };
 
 const homeList = (req, res) => {
     const path = '/api/locations';
+    
     const requestOptions = {
         url: `${apiOptions.server}${path}`,
         method: 'GET',
@@ -33,6 +43,7 @@ const homeList = (req, res) => {
             maxDistance: 20000
         }
     };
+
     request(
         requestOptions,
         (err, response, body) => {
@@ -41,73 +52,120 @@ const homeList = (req, res) => {
     );
 };
 
+
 const locationInfo = (req, res) => {
-    res.render('location-info', {
-        title: 'Loc8r - find a place to work with WiFi',
-            pageHeader : {
-                title: 'Loc8r',
-                strapLine: 'Find a place to work with WiFi near you!',
-        },
-        location:
-            {
-                name: "Saxby's",
-                address: "104 Kings Hwy E, Haddonfield, NJ 08033",
-                openingTimes: [
-                    {
-                        days: 'Monday - Friday',
-                        opening: '7:00am',
-                        closing: '7:00pm',
-                        closed: false
-                    },
-                    {
-                        days: 'Saturday',
-                        opening: '8:00am',
-                        closing: '5:00pm',
-                        closed: false
-                    },
-                    {
-                        days: 'Sunday',
-                        closed: true
-                    }
-                ],
-                rating: 4,
-                facilities: ['Hot Drinks', 'Hot Food', 'Hot WiFi'],
-                distance: '100m',
-                reviews: [
-                    {
-                        author: "Bob Muffin",
-                        rating: 4,
-                        timestamp: "14 February 2024",
-                        reviewText: "Best Chai Latte in the Greater Philadelphia Area"
-                    },
-                    {
-                        author: "John Smith",
-                        rating: 3,
-                        timestamp: "12 September 2024",
-                        reviewText: "Friendly staff, but the WiFi can be a bit slow."
-                    }
-                ],
-                coords: {
-                    lat: 39.8959107,
-                    lon: 1
-                }
-            },
-        sidebar: {
-            context: 'is on Loc8r because it has accessible wifi and space to sit down with your laptop and get some work done.',
-            callToAction: 'If you\'ve been and you like it - or if you don\'t - please leave a review to help other people just like you.'
-        }
-    });
+    const renderCallBack = (req, res, responseData) => {
+        _renderDetailsPage(req, res, responseData);
+    };
+    _getLocationInfo(req, res, renderCallBack)
 };
 
 const addReview = (req, res) => {
+    const renderCallBack = (req, res, responseData) => {
+        _renderReviewForm(req, res, responseData);
+    };
+    _getLocationInfo(req, res, renderCallBack);
+}
+
+const doAddReview = (req, res) => {
+    const locationId = req.params.locationId;
+    const path = `/api/locations/${locationId}/reviews`;
+
+    const postData = {
+        author: req.body.name,
+        rating: parseInt(req.body.rating, 10),
+        reviewText: req.body.reviewText,
+    };
+
+    console.log(`POST DATA: ${postData.author}, ${postData.reviewText}, ${postData.rating}`); 
+
+    const requestOptions = {
+        url: `${apiOptions.server}${path}`,
+        method: 'POST',
+        json: postData
+    };
+
+    request(
+        requestOptions,
+        (err, {statusCode}, body) => {
+            if (statusCode === 201) {
+                res.redirect(`/location/${locationId}`);
+            } else {
+                _showError(req, res, statusCode);
+            }
+        }
+    );
+};
+
+/** Private Functions **/
+
+const _renderDetailsPage = (req, res, location) => {
+    res.render('location-info', {
+        title: location.name,
+        pageHeader: {
+            title: location.name
+        },
+        sidebar: {
+            context: 'is on Loc8r because it has accessible WiFi and space to sit down with your laptop and ' +
+                'get some work done.',
+            callToAction: "If you've been here before and you like it - or don't - please leave a review!"
+        },
+        location: location
+    });
+};
+
+const _renderReviewForm = (req, res, {name}) => {
     res.render('location-review-form', {
-        title: 'Add Review',
-        pageHeader: { title: "Review Saxby's" }
+        title: `Review ${name} on Loc8r`,
+        pageHeader: {title: `Review ${name}`}
     });
 }
+
+const _showError = function (req, res, status) {
+    let title = '';
+    let content = '';
+    if (status === 404) {
+        title = `404, page not found`;
+        content = "Can't find the page ¯\\_(ツ)_/¯";
+    } else {
+        title = `${status}, something's broken`;
+        content = "Something is broken somewhere";
+    }
+    res.status(status);
+    res.render('generic-text', {
+        title: title,
+        content: content,
+    });
+};
+
+const _getLocationInfo = (req, res, callback) => {
+    const path = `/api/locations/${req.params.locationId}`;
+    const requestOptions = {
+        url: `${apiOptions.server}${path}`,
+        method: 'GET',
+        json: {},
+    };
+
+    request(
+        requestOptions,
+        (err, response, body) => {
+            const data = body;
+            if (response.statusCode === 200) {
+                data.coords = {
+                    lng: body.coords[0],
+                    lat: body.coords[1]
+                };
+                callback(req, res, data);
+            } else {
+                _showError(req, res, response.statusCode);
+            }
+        }
+    );
+};
 
 module.exports = {
     homeList,
     locationInfo,
-    addReview
+    addReview,
+    doAddReview
 };
